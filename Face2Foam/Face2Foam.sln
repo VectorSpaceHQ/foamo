@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Face2Foam", "Face2Foam\Face2Foam.csproj", "{06203E56-29EA-4DF8-8BFC-3AA67149892D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Face2FoamLib", "Face2FoamLib\Face2FoamLib.csproj", "{F9434C08-A360-467C-B3D5-65A9FB3B831A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06203E56-29EA-4DF8-8BFC-3AA67149892D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06203E56-29EA-4DF8-8BFC-3AA67149892D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06203E56-29EA-4DF8-8BFC-3AA67149892D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06203E56-29EA-4DF8-8BFC-3AA67149892D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9434C08-A360-467C-B3D5-65A9FB3B831A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9434C08-A360-467C-B3D5-65A9FB3B831A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9434C08-A360-467C-B3D5-65A9FB3B831A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9434C08-A360-467C-B3D5-65A9FB3B831A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C09970F6-BE34-45F6-9AA4-89010D4D047B}
+	EndGlobalSection
+EndGlobal
