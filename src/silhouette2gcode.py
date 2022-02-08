@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+# Convert png silhouette into gcode
 import cv2
 import numpy as np
 import os
-
+import sys
 
 def contour_to_gcode(contours, filename):
     basefile = os.path.basename(filename)
@@ -19,15 +20,19 @@ def contour_to_gcode(contours, filename):
 
 
 if __name__ == "__main__":
-    image = "../ext/nicolas_silhouette.png"
+    try:
+        infile = sys.argv[1]
+    except Exception as e:
+        print("Error: Input file not provided")
+        print("Usage: $ ./silhouette2gcode.py infile.png")
+        sys.exit()
 
-    im = cv2.imread(image)
+    im = cv2.imread(infile)
     imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(imgray, 127, 255, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cont = cv2.drawContours(im, contours, -1, (0,255,0), 3)
-    contour_to_gcode(contours, image)
-
+    contour_to_gcode(contours, infile)
 
     cv2.imshow('Edges in the image', cont) #displaying the image
     cv2.waitKey(0)
