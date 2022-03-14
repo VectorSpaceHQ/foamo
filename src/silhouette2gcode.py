@@ -4,19 +4,46 @@ import cv2
 import numpy as np
 import os
 import sys
+import math
 
-def contour_to_gcode(contours, filename):
+def calc_dist(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    dist = math.sqrt((x2-x1)**2 + (y2-y1)**2)
+    return dist
+    
+def nearest_neighbor(points):
+    sorted_points = [[0,0]]
+    
+    target_len = len(points)
+    while len(sorted_points) < target_len:
+        current_point = sorted_points[-1]
+        min_d = 10E12
+        min_idx = 10E9
+        for i in range(len(points)):
+            d = calc_dist(current_point, points[i])
+            if d < min_d:
+                min_d = d
+                min_idx = i
+        if min_d > 50:
+            print("long line needs to be dropped", min_idx, min_d, len(points))
+            target_len -= 1
+        else:
+            sorted_points.append(points[min_idx])
+        points.pop(min_idx)
+    return sorted_points
+
+
+def points_to_gcode(points, filename):
     basefile = os.path.basename(filename)
     outname = os.path.splitext(basefile)[0]
     with open(outname + '.nc', "w+") as f:
         f.write('(new profile)\n')
         f.write('G20\n') # inches
-        for c in contours:
-            f.write('(new contour)\n')
-            for i in range(len(c)):
-                x, y = c[i][0]
-                speed = 10000
-                f.write("G1 X{} Y{} F{}\n".format(x,y, speed))
+        for point in points:
+            x, y = point
+            speed = 1000
+            f.write("G1 X{} Y{} F{}\n".format(x,y, speed))
 
 
 if __name__ == "__main__":
@@ -30,9 +57,17 @@ if __name__ == "__main__":
     im = cv2.imread(infile)
     imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(imgray, 127, 255, 0)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    # contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cont = cv2.drawContours(im, contours, -1, (0,255,0), 3)
-    contour_to_gcode(contours, infile)
+    points = []
+    for c in contours:
+        for point in c:
+            points.append(point[0])
 
-    cv2.imshow('Edges in the image', cont) #displaying the image
-    cv2.waitKey(0)
+    sorted_points = nearest_neighbor(points)
+    points_to_gcode(sorted_points, infile)
+    # points_to_gcode(points, infile)
+
+    # cv2.imshow('Edges in the image', cont) #displaying the image
+    # cv2.waitKey(0)
