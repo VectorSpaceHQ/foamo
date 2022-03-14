@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import gphoto2 as gp
+import datetime
 
 logging.basicConfig(
         format='%(levelname)s: %(name)s: %(message)s', level=logging.WARNING)
@@ -24,8 +25,11 @@ def capture_image(camera):
     print('Capturing image')
     file_path = camera.capture(gp.GP_CAPTURE_IMAGE)
     print('Camera file path: {0}/{1}'.format(file_path.folder, file_path.name))
-    target = os.path.join('./', file_path.name)
-    print('Copying image to', target)
+    file_name, extension = file_path.name.split(".")
+    now = datetime.datetime.now()
+    date_time = now.strftime("%Y%m%d-%H%M%S")
+    target = os.path.join('../ext/', "foamo_" + date_time + "." + extension)
+
     camera_file = camera.file_get(
         file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
     camera_file.save(target)
