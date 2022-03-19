@@ -20,16 +20,18 @@ namespace Face2Foam
     /// </summary>
     public partial class MainWindow : Window
     {
+        Face2FoamLib.CameraConnector cameraConnector;
         Face2FoamLib.ImageProcessor imageProcessor;
         Face2FoamLib.ImageProcessor.ImageProcessorSettings imageProcessorSettings;
 
         public ImageProcessorView ImageView { get; protected set; }
         public MainWindow()
         {
+            cameraConnector = new Face2FoamLib.CameraConnector();
             imageProcessor = new Face2FoamLib.ImageProcessor();
             imageProcessorSettings = new Face2FoamLib.ImageProcessor.ImageProcessorSettings();
             imageProcessorSettings.BackgroundFilters.Add(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings() { Color = new AForge.Imaging.RGB(160, 170, 180), Radius = 255 });
-            ImageView = new ImageProcessorView(imageProcessor, imageProcessorSettings);
+            ImageView = new ImageProcessorView(imageProcessor, cameraConnector, imageProcessorSettings);
             DataContext = this;
             InitializeComponent();
             ImageView.ImageSourceFile = @"C:\Users\andre\OneDrive\Documents\Projects\Foam Cutter\Face Profiler\Sample Images 2022-02-06\PXL_20220206_020027263.MP.jpg";
