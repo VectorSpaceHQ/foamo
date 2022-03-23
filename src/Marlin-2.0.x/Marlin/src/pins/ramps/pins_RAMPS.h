@@ -75,7 +75,7 @@
   #define SERVO2_PIN                           5
 #endif
 #ifndef SERVO3_PIN
-  #define SERVO3_PIN                           -1
+  #define SERVO3_PIN                           4
 #endif
 
 //
@@ -86,7 +86,7 @@
     #define X_MIN_PIN                          3
   #endif
   #ifndef X_MAX_PIN
-    #define X_MAX_PIN                          -1
+    #define X_MAX_PIN                          2
   #endif
 #endif
 #ifndef Y_STOP_PIN
@@ -94,7 +94,7 @@
     #define Y_MIN_PIN                         14
   #endif
   #ifndef Y_MAX_PIN
-    #define Y_MAX_PIN                         -1
+    #define Y_MAX_PIN                         15
   #endif
 #endif
 #ifndef Z_STOP_PIN
@@ -102,7 +102,7 @@
     #define Z_MIN_PIN                         18
   #endif
   #ifndef Z_MAX_PIN
-    #define Z_MAX_PIN                         -1
+    #define Z_MAX_PIN                         19
   #endif
 #endif
 
@@ -144,42 +144,29 @@
 #endif
 
 #ifndef E0_STEP_PIN
-  #define E0_STEP_PIN                         4
+  #define E0_STEP_PIN                         26
 #endif
 #ifndef E0_DIR_PIN
-  #define E0_DIR_PIN                          2
+  #define E0_DIR_PIN                          28
 #endif
 #ifndef E0_ENABLE_PIN
-  #define E0_ENABLE_PIN                       15
+  #define E0_ENABLE_PIN                       24
 #endif
 #ifndef E0_CS_PIN
-  #define E0_CS_PIN                           19
+  #define E0_CS_PIN                           42
 #endif
 
 #ifndef E1_STEP_PIN
-  #define E1_STEP_PIN                         26
+  #define E1_STEP_PIN                         36
 #endif
 #ifndef E1_DIR_PIN
-  #define E1_DIR_PIN                          28
+  #define E1_DIR_PIN                          34
 #endif
 #ifndef E1_ENABLE_PIN
-  #define E1_ENABLE_PIN                       24
+  #define E1_ENABLE_PIN                       30
 #endif
 #ifndef E1_CS_PIN
-  #define E1_CS_PIN                           42
-#endif
-
-#ifndef E2_STEP_PIN
-  #define E2_STEP_PIN                         36
-#endif
-#ifndef E2_DIR_PIN
-  #define E2_DIR_PIN                          34
-#endif
-#ifndef E2_ENABLE_PIN
-  #define E2_ENABLE_PIN                       30
-#endif
-#ifndef E2_CS_PIN
-  #define E2_CS_PIN                           44
+  #define E1_CS_PIN                           44
 #endif
 
 //

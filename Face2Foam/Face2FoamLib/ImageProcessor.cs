@@ -18,12 +18,29 @@ namespace Face2FoamLib
         public UnmanagedImage SmoothedImage { get; protected set; }
         public UnmanagedImage HeadImage { get; protected set; }
 
+        bool Busy;
 
 
         public void ProcessImage(string imageFile, ImageProcessorSettings settings)
         {
+            if (Busy) return;
             OriginalImage = UnmanagedImage.FromManagedImage(new Bitmap(imageFile));
-            
+            ProcessOriginalImage(settings);
+        }
+
+        public void ProcessImage(System.IO.Stream stream, ImageProcessorSettings settings)
+        {
+            if(Busy) return;
+            using(WrapStream ws = new WrapStream(stream))
+            {
+                stream.Position = 0;
+                OriginalImage = UnmanagedImage.FromManagedImage(new Bitmap(ws));
+            }
+            ProcessOriginalImage(settings);
+        }
+        protected void ProcessOriginalImage(ImageProcessorSettings settings)
+        {
+            Busy = true;
             EuclideanColorFiltering radiusFilter = new EuclideanColorFiltering();
             radiusFilter.FillOutside = false;
             ColorFiltering thresholdFilter = new ColorFiltering();
@@ -109,7 +126,7 @@ namespace Face2FoamLib
             blobFilter.ApplyInPlace(HeadImage);
             invertingFilter.ApplyInPlace(HeadImage);
 
-
+            Busy = false;
         }
 
         public static System.Windows.Media.Imaging.BitmapImage GetBitmapFromUnmanaged(UnmanagedImage image, System.Drawing.Imaging.ImageFormat imageFormat = null)

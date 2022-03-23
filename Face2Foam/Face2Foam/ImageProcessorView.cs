@@ -14,6 +14,9 @@ namespace Face2Foam
     public class ImageProcessorView : ObservableObject
     {
         protected Face2FoamLib.ImageProcessor ImageProcessor;
+        protected Face2FoamLib.CameraConnector Camera;
+
+        
 
         public BitmapImage OriginalImage => Face2FoamLib.ImageProcessor.GetBitmapFromUnmanaged(ImageProcessor.OriginalImage);
         public BitmapImage ForegroundRemovedImage => Face2FoamLib.ImageProcessor.GetBitmapFromUnmanaged(ImageProcessor.ForegroundRemovedImage);
@@ -28,14 +31,20 @@ namespace Face2Foam
         public string ImageSourceFile { get { return imageSourceFile; } set { SetProperty(ref imageSourceFile, value); UpdateImagesCommand.NotifyCanExecuteChanged(); } }
 
         public RelayCommand UpdateImagesCommand { get; protected set; }
+        public RelayCommand ConnectCameraCommand { get; protected set; }
+        public RelayCommand StreamCameraCommand { get; protected set; }
 
-        public ImageProcessorView(Face2FoamLib.ImageProcessor imageProcessor, Face2FoamLib.ImageProcessor.ImageProcessorSettings settings)
+        public ImageProcessorView(Face2FoamLib.ImageProcessor imageProcessor, Face2FoamLib.CameraConnector cameraConnector, Face2FoamLib.ImageProcessor.ImageProcessorSettings settings)
         {
             ImageProcessor = imageProcessor;
+            Camera = cameraConnector;
+            Camera.NewLiveViewImageAvailable += (c,s) => ImageProcessor.ProcessImage(s,Settings);
             Settings = settings;
             SettingsView = new ImageProcessorSettingsView(Settings);
 
-            UpdateImagesCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(UpdateImages,() => System.IO.File.Exists(ImageSourceFile));
+            UpdateImagesCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(UpdateImages,() => System.IO.File.Exists(ImageSourceFile) && !Camera.IsStreaming);
+            ConnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Connect, () => !Camera.IsConnected);
+            StreamCameraCommand = new RelayCommand(Camera.StartLiveCapture, () => Camera.IsConnected && !Camera.IsStreaming);
         }
 
         public void UpdateImages()

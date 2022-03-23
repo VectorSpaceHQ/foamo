@@ -696,7 +696,7 @@
 
 // If you want endstops to stay on (by default) even when not homing
 // enable this option. Override at any time with M120, M121.
-//#define ENDSTOPS_ALWAYS_ON_DEFAULT
+#define ENDSTOPS_ALWAYS_ON_DEFAULT
 
 // @section extras
 
@@ -727,21 +727,27 @@
 #define X_DUAL_STEPPER_DRIVERS
 #if ENABLED(X_DUAL_STEPPER_DRIVERS)
   //#define INVERT_X2_VS_X_DIR    // Enable if X2 direction signal is opposite to X
-  //#define X_DUAL_ENDSTOPS
+  #define X_DUAL_ENDSTOPS
   #if ENABLED(X_DUAL_ENDSTOPS)
-    #define X2_USE_ENDSTOP _XMAX_
+    #define X2_USE_ENDSTOP _ZMIN_
     #define X2_ENDSTOP_ADJUSTMENT  0
   #endif
+  #define X2_STEP_PIN E0_STEP_PIN
+  #define X2_DIR_PIN E0_DIR_PIN
+  #define X2_ENABLE_PIN E0_ENABLE_PIN
 #endif
 
 #define Y_DUAL_STEPPER_DRIVERS
 #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
   //#define INVERT_Y2_VS_Y_DIR   // Enable if Y2 direction signal is opposite to Y
-  //#define Y_DUAL_ENDSTOPS
+  #define Y_DUAL_ENDSTOPS
   #if ENABLED(Y_DUAL_ENDSTOPS)
-    #define Y2_USE_ENDSTOP _YMAX_
+    #define Y2_USE_ENDSTOP _ZMAX_
     #define Y2_ENDSTOP_ADJUSTMENT  0
   #endif
+  #define Y2_STEP_PIN E1_STEP_PIN
+  #define Y2_DIR_PIN E1_DIR_PIN
+  #define Y2_ENABLE_PIN E1_ENABLE_PIN
 #endif
 
 //
@@ -1016,7 +1022,7 @@
 
 // @section motion
 
-#define AXIS_RELATIVE_MODES { false, false, false, false }
+#define AXIS_RELATIVE_MODES { false, false, false }
 
 // Add a Duplicate option for well-separated conjoined nozzles
 //#define MULTI_NOZZLE_DUPLICATION
