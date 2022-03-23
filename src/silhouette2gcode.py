@@ -5,6 +5,43 @@ import numpy as np
 import os
 import sys
 import math
+import re
+
+def scale_gcode(infile):
+    max_x = 800
+    max_y = 800
+
+    with open(infile, "r") as f:
+        lines = f.readlines()
+
+    peak_x = 0
+    peak_y = 0
+    for line in lines:
+        x = re.search('X[0-9]+\.[0-9]*', line)
+        x = x[1:] # drop the X
+        y = re.search('Y[0-9]+\.[0-9]*', line)
+        y = y[1:] # drop the Y
+        if x > peak_x:
+            peak_x = x
+        if y > peak_y:
+            peak_y = y
+
+    x_scale = max_x / peak_x
+    y_scale = max_y / peak_y
+
+    newlines = []
+    for line in lines:
+        x = re.search('X[0-9]+\.[0-9]*', line)
+        x = x[1:] # drop the X
+        y = re.search('Y[0-9]+\.[0-9]*', line)
+        y = y[1:] # drop the X
+        newline = re.sub(x, str(x*x_scale), line)
+        newline = re.sub(y, str(y*y_scale), newline)
+        newlines.append(newline)
+
+    with open(infile+"-scaled", "w") as f:
+        for newline in newlines:
+            f.writeline(newline)
 
 def calc_dist(p1, p2):
     x1, y1 = p1
