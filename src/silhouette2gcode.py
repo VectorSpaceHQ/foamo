@@ -11,10 +11,10 @@ def calc_dist(p1, p2):
     x2, y2 = p2
     dist = math.sqrt((x2-x1)**2 + (y2-y1)**2)
     return dist
-    
+
 def nearest_neighbor(points):
     sorted_points = [[0,0]]
-    
+
     target_len = len(points)
     while len(sorted_points) < target_len:
         current_point = sorted_points[-1]
@@ -42,7 +42,7 @@ def points_to_gcode(points, filename):
         f.write('G20\n') # inches
         for point in points:
             x, y = point
-            speed = 1000
+            speed = 2400 # feedrate (mm/min)
             f.write("G1 X{} Y{} F{}\n".format(x,y, speed))
 
 
