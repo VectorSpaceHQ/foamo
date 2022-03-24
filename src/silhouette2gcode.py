@@ -5,16 +5,53 @@ import numpy as np
 import os
 import sys
 import math
+import re
+
+def scale_gcode(infile):
+    max_x = 800
+    max_y = 800
+
+    with open(infile, "r") as f:
+        lines = f.readlines()
+
+    peak_x = 0
+    peak_y = 0
+    for line in lines:
+        x = re.search('X[0-9]+\.[0-9]*', line)
+        x = x[1:] # drop the X
+        y = re.search('Y[0-9]+\.[0-9]*', line)
+        y = y[1:] # drop the Y
+        if x > peak_x:
+            peak_x = x
+        if y > peak_y:
+            peak_y = y
+
+    x_scale = max_x / peak_x
+    y_scale = max_y / peak_y
+
+    newlines = []
+    for line in lines:
+        x = re.search('X[0-9]+\.[0-9]*', line)
+        x = x[1:] # drop the X
+        y = re.search('Y[0-9]+\.[0-9]*', line)
+        y = y[1:] # drop the X
+        newline = re.sub(x, str(x*x_scale), line)
+        newline = re.sub(y, str(y*y_scale), newline)
+        newlines.append(newline)
+
+    with open(infile+"-scaled", "w") as f:
+        for newline in newlines:
+            f.writeline(newline)
 
 def calc_dist(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
     dist = math.sqrt((x2-x1)**2 + (y2-y1)**2)
     return dist
-    
+
 def nearest_neighbor(points):
     sorted_points = [[0,0]]
-    
+
     target_len = len(points)
     while len(sorted_points) < target_len:
         current_point = sorted_points[-1]
@@ -42,7 +79,7 @@ def points_to_gcode(points, filename):
         f.write('G20\n') # inches
         for point in points:
             x, y = point
-            speed = 1000
+            speed = 2400 # feedrate (mm/min)
             f.write("G1 X{} Y{} F{}\n".format(x,y, speed))
 
 
