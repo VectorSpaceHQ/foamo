@@ -43,8 +43,8 @@ namespace Face2Foam
             SettingsView = new ImageProcessorSettingsView(Settings);
 
             UpdateImagesCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(UpdateImages,() => System.IO.File.Exists(ImageSourceFile) && !Camera.IsStreaming);
-            ConnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Connect, () => !Camera.IsConnected);
-            StreamCameraCommand = new RelayCommand(Camera.StartLiveCapture, () => Camera.IsConnected && !Camera.IsStreaming);
+            ConnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Connect, () =>true || !Camera.IsConnected);
+            StreamCameraCommand = new RelayCommand(Camera.StartLiveCapture, () => true || Camera.IsConnected && !Camera.IsStreaming);
         }
 
         public void UpdateImages()

@@ -27,6 +27,7 @@ namespace Face2FoamLib
         {
             Camera?.Dispose();
             Camera = CanonAPI.GetCameraList().SingleOrDefault();
+            if (Camera == null) return;
             Camera.LiveViewUpdated += HandleLiveViewUpdated;
             Camera.PropertyChanged += HandlePropertyChanged;
             Camera.StateChanged += HandleStateChanged;
