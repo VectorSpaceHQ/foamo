@@ -27,8 +27,13 @@ namespace Face2Foam
 
         protected Face2FoamLib.ImageProcessor.ImageProcessorSettings Settings;
         public ImageProcessorSettingsView SettingsView { get; protected set; }
+        string imageSourceFolder;
+        public string ImageSourceFolder { get { return imageSourceFolder; } set { SetProperty(ref imageSourceFolder, value); RecalculateButtonPermissives(); SetToNextImage(); } }
         string imageSourceFile;
         public string ImageSourceFile { get { return imageSourceFile; } set { SetProperty(ref imageSourceFile, value); UpdateImagesFromFile(); } }
+        public string ImageSourceFilePath { get { return System.IO.Path.Combine(imageSourceFolder, imageSourceFile); } }
+
+
         string gcodeFolder;
         int imageSize;//millimeters of each edge of the square
         public string ImageSize { get { return imageSize.ToString(); } set { try { SetProperty(ref imageSize, Convert.ToInt32(value)); } catch(Exception ex) { SetProperty(ref imageSize, Convert.ToInt32(0)); } } }
@@ -42,8 +47,9 @@ namespace Face2Foam
 
         public RelayCommand ConnectCameraCommand { get; protected set; }
         public RelayCommand DisconnectCameraCommand { get; protected set; }
-        public RelayCommand StartCameraStreamCommand { get; protected set; }
-        public RelayCommand StopCameraStreamCommand { get; protected set; }
+        public RelayCommand CaptureCameraCommand { get; protected set; }
+        public RelayCommand PreviousImageCommand { get; protected set; }
+        public RelayCommand NextImageCommand { get; protected set; }
         public RelayCommand GCodeExportCommand { get; protected set; }
 
         public ImageProcessorView(Face2FoamLib.ImageProcessor imageProcessor, Face2FoamLib.CameraConnector cameraConnector, Face2FoamLib.ImageProcessor.ImageProcessorSettings settings)
@@ -62,7 +68,6 @@ namespace Face2Foam
             ProfileImage = Face2FoamLib.ImageProcessor.InitializeWritableBitmap(System.Windows.Media.PixelFormats.Gray8);
 
             ProcessImageAction = (System.Drawing.Bitmap b) => { ImageProcessor.ProcessImage(b, Settings); UpdateDisplayedImages(); };
-            Camera.NewLiveViewImageAvailable +=  HandleNewLiveViewImage;
             Camera.SomethingChanged += (o, e) => { System.Windows.Application.Current.Dispatcher.Invoke(RecalculateButtonPermissives); };
             Settings = settings;
             SettingsView = new ImageProcessorSettingsView(Settings);
@@ -75,48 +80,53 @@ namespace Face2Foam
             imageSize = 600;
 
             ConnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Connect, () =>!Camera.IsConnected);
+            CaptureCameraCommand = new RelayCommand(() => {; }, () => false);
             DisconnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Dispose, () => Camera.IsConnected);
-            StartCameraStreamCommand = new RelayCommand(Camera.StartLiveCapture, () => Camera.IsConnected && !Camera.IsStreaming);
-            StopCameraStreamCommand = new RelayCommand(Camera.StopLiveCapture, () => Camera.IsConnected && Camera.IsStreaming);
             GCodeExportCommand = new RelayCommand(ExportGCode, () => System.IO.Directory.Exists(GCodeFolder));
-        }
-
-        public void HandleNewLiveViewImage(EOSDigital.API.Camera sender, System.IO.Stream img)
-        {
-            
-
-            //BitmapImage EvfImage = new BitmapImage();
-            System.Drawing.Bitmap bitmap;
-            //using (Face2FoamLib.WrapStream s = new Face2FoamLib.WrapStream(img))
-            //{
-            //    img.Position = 0;
-            //    EvfImage.BeginInit();
-            //    EvfImage.StreamSource = s;
-            //    EvfImage.CacheOption = BitmapCacheOption.OnLoad;
-            //    EvfImage.EndInit();
-            //    EvfImage.Freeze();
-            //}
-            //using (System.IO.MemoryStream outStream = new System.IO.MemoryStream())
-            //{
-            //    BitmapEncoder enc = new BmpBitmapEncoder();
-            //    enc.Frames.Add(BitmapFrame.Create(EvfImage));
-            //    enc.Save(outStream);
-            //    bitmap = new System.Drawing.Bitmap(outStream);
-
-            //}
-
-            bitmap = new System.Drawing.Bitmap(img);
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(ProcessImageAction,bitmap);
-        }
-
-        public void UpdateImagesFromFile()
-        {
-            if (!System.IO.File.Exists(ImageSourceFile)) return;
-            ImageProcessor.ProcessImage(ImageSourceFile, Settings);
-            UpdateDisplayedImages();
+            NextImageCommand = new RelayCommand(SetToNextImage, () => System.IO.Directory.Exists(ImageSourceFolder));
+            PreviousImageCommand = new RelayCommand(SetToPreviousImage, () => System.IO.Directory.Exists(ImageSourceFolder));
         }
 
         
+        public void UpdateImagesFromFile()
+        {
+            if (!System.IO.File.Exists(ImageSourceFilePath)) return;
+            ImageProcessor.ProcessImage(ImageSourceFilePath, Settings);
+            UpdateDisplayedImages();
+        }
+
+        protected void SetToNextImage()
+        {
+            if(System.IO.Directory.Exists(imageSourceFolder))
+            {
+                List<string> files = System.IO.Directory.EnumerateFiles(imageSourceFolder).Select(f => System.IO.Path.GetFileName(f)).ToList();
+                int i = files.FindIndex(f => f.Equals(ImageSourceFile));
+                if(i >= 0 && i < files.Count-1)
+                {
+                    ImageSourceFile = files[i + 1];
+                } else
+                {
+                    ImageSourceFile = files.Last();
+                }
+            }
+        }
+        protected void SetToPreviousImage()
+        {
+            if (System.IO.Directory.Exists(imageSourceFolder))
+            {
+                List<string> files = System.IO.Directory.EnumerateFiles(imageSourceFolder).Select(f => System.IO.Path.GetFileName(f)).ToList();
+                int i = files.FindIndex(f => f.Equals(ImageSourceFile));
+                if (i > 0 && i < files.Count)
+                {
+                    ImageSourceFile = files[i - 1];
+                }
+                else
+                {
+                    ImageSourceFile = files.First();
+                }
+            }
+        }
+
 
         public void UpdateDisplayedImages()
         {
@@ -146,8 +156,9 @@ namespace Face2Foam
         {
             ConnectCameraCommand?.NotifyCanExecuteChanged();
             DisconnectCameraCommand?.NotifyCanExecuteChanged();
-            StartCameraStreamCommand?.NotifyCanExecuteChanged();
-            StopCameraStreamCommand?.NotifyCanExecuteChanged();
+            CaptureCameraCommand?.NotifyCanExecuteChanged();
+            PreviousImageCommand?.NotifyCanExecuteChanged();
+            NextImageCommand?.NotifyCanExecuteChanged();
             GCodeExportCommand?.NotifyCanExecuteChanged();
         }
 
@@ -161,6 +172,30 @@ namespace Face2Foam
             }
         }
 
+        public void AddForegroundFilterFromMouseClick(double x, double y)
+        {
+            System.Drawing.Color color = GetColorFromImage(x,y,ImageProcessor.ForegroundRemovedImage);
+            SettingsView.AddForegroundColorFilter(new AForge.Imaging.RGB(color.R, color.G, color.B), 10);
+        }
+        public void AddBackgroundFilterFromMouseClick(double x, double y)
+        {
+            System.Drawing.Color color = GetColorFromImage(x, y, ImageProcessor.BackgroundRemovedImage);
+            SettingsView.AddBackgroundColorFilter(new AForge.Imaging.RGB(color.R, color.G, color.B), 10);
+        }
+
+        protected System.Drawing.Color GetColorFromImage(double x, double y, AForge.Imaging.UnmanagedImage image)
+        {
+            return image.GetPixel(Convert.ToInt32(x * (image.Width - 1)), Convert.ToInt32(y * (image.Height - 1)));
+        }
+
+        public void SetStartPositionFromMouseClick(double x)
+        {
+            SettingsView.StartPosition = Convert.ToInt32(1000 * x);
+        }
+        public void SetEndPositionFromMouseClick(double x)
+        {
+            SettingsView.EndPosition = Convert.ToInt32(1000 * x);
+        }
 
     }
 
@@ -231,14 +266,32 @@ namespace Face2Foam
         public ImageProcessorSettingsView(Face2FoamLib.ImageProcessor.ImageProcessorSettings settings)
         {
             Settings = settings;
-            ForegroundFilters = new ObservableCollection<ImageProcessorColorFilterSettingsView>(Settings.ForegroundFilters.Select(f => new ImageProcessorColorFilterSettingsView(f,ForegroundFilters)));
-            BackgroundFilters = new ObservableCollection<ImageProcessorColorFilterSettingsView>(Settings.BackgroundFilters.Select(f => new ImageProcessorColorFilterSettingsView(f,BackgroundFilters)));
+            ForegroundFilters = new ObservableCollection<ImageProcessorColorFilterSettingsView>();
+            BackgroundFilters = new ObservableCollection<ImageProcessorColorFilterSettingsView>();
+            settings.ForegroundFilters.ForEach(f => 
+            {   ImageProcessorColorFilterSettingsView fv = new ImageProcessorColorFilterSettingsView(f, ForegroundFilters);
+                fv.PropertyChanged += (o, e) => NotifyChildPropertyChanged();
+                ForegroundFilters.Add(fv);
+            });
+            settings.BackgroundFilters.ForEach(f =>
+            {
+                ImageProcessorColorFilterSettingsView fv = new ImageProcessorColorFilterSettingsView(f, BackgroundFilters);
+                fv.PropertyChanged += (o, e) => NotifyChildPropertyChanged();
+                BackgroundFilters.Add(fv);
+            });
             ForegroundFilters.CollectionChanged += HandleForegroundCollectionChanged;
             BackgroundFilters.CollectionChanged += HandleBackgroundCollectionChanged;
-            ForegroundFilters.ToList().ForEach(f => f.PropertyChanged += (o, e) => NotifyChildPropertyChanged());
-            BackgroundFilters.ToList().ForEach(f => f.PropertyChanged += (o, e) => NotifyChildPropertyChanged());
-            AddForegroundFilterCommand = new RelayCommand(() => ForegroundFilters.Add(new ImageProcessorColorFilterSettingsView(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings(),ForegroundFilters)));
-            AddBackgroundFilterCommand = new RelayCommand(() => BackgroundFilters.Add(new ImageProcessorColorFilterSettingsView(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings(), BackgroundFilters)));
+            AddForegroundFilterCommand = new RelayCommand(() => AddForegroundColorFilter(new AForge.Imaging.RGB(0, 0, 0), 0));
+            AddBackgroundFilterCommand = new RelayCommand(() => AddBackgroundColorFilter(new AForge.Imaging.RGB(255,255,255),255));
+        }
+
+        public void AddForegroundColorFilter(AForge.Imaging.RGB color, short radius, bool enabled = true)
+        {
+            ForegroundFilters.Add(new ImageProcessorColorFilterSettingsView(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings(color, radius, enabled), ForegroundFilters));
+        }
+        public void AddBackgroundColorFilter(AForge.Imaging.RGB color, short radius, bool enabled = true)
+        {
+            BackgroundFilters.Add(new ImageProcessorColorFilterSettingsView(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings(color, radius, enabled), BackgroundFilters));
         }
 
         protected void NotifyChildPropertyChanged()
@@ -264,6 +317,7 @@ namespace Face2Foam
                         item.PropertyChanged += (o, ee) => NotifyChildPropertyChanged();
                     }
             }
+            NotifyChildPropertyChanged();
         }
 
         protected void HandleBackgroundCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -286,6 +340,7 @@ namespace Face2Foam
                         item.PropertyChanged += (o, ee) => NotifyChildPropertyChanged();
                     }
             }
+            NotifyChildPropertyChanged();
         }
 
     }

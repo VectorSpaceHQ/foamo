@@ -310,7 +310,12 @@ namespace Face2FoamLib
                 {
                     Color = new RGB(255, 255, 255);
                 }
-
+                public ColorFilterSettings(RGB color, short radius, bool enabled = true)
+                {
+                    Color = color;
+                    Radius = radius;
+                    Enabled = enabled;
+                }
             }
         }
     }
