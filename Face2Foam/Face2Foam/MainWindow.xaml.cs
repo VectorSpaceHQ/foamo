@@ -45,7 +45,6 @@ namespace Face2Foam
             ImageView.GCodePreamble = "G21\r\nG90\r\nG28 X Y\r\nG0 X0 Y0\r\nG1 F600";
 #endif
 
-            this.GotFocus += (o,e) => System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         public void Dispose()
@@ -79,6 +78,16 @@ namespace Face2Foam
             Image i = sender as Image;
             System.Windows.Point p = e.GetPosition(i);
             ImageView.SetEndPositionFromMouseClick(Convert.ToDouble(p.X) / i.Width);
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            var hwndSource = PresentationSource.FromVisual(this) as System.Windows.Interop.HwndSource;
+
+            if (hwndSource != null)
+                hwndSource.CompositionTarget.RenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+
+            base.OnSourceInitialized(e);
         }
     }
 }

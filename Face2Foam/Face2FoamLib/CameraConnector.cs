@@ -19,6 +19,7 @@ namespace Face2FoamLib
 
         public event LiveViewUpdate NewLiveViewImageAvailable;
         public event EventHandler SomethingChanged;
+        public event DownloadHandler PictureTaken;
         public CameraConnector()
         {
             CanonAPI = new CanonAPI(false);
@@ -33,6 +34,7 @@ namespace Face2FoamLib
             Camera.LiveViewUpdated += HandleLiveViewUpdated;
             Camera.CameraHasShutdown += delegate { HandleSomethingChanged(); };
             Camera.DownloadReady += delegate { HandleSomethingChanged(); };
+            Camera.DownloadReady += HandlePictureTaken;
             Camera.LiveViewStopped += delegate { HandleSomethingChanged(); };
             Camera.ObjectChanged += delegate { HandleSomethingChanged(); };
             Camera.ProgressChanged += delegate { HandleSomethingChanged(); };
@@ -65,6 +67,22 @@ namespace Face2FoamLib
         public void HandleLiveViewUpdated(Camera source, System.IO.Stream stream)
         {
             NewLiveViewImageAvailable?.Invoke(source, stream);
+        }
+
+        public void HandlePictureTaken(Camera sender, DownloadInfo info)
+        {
+            PictureTaken?.Invoke(sender,info);
+        }
+
+        public bool CanCapture(string folder)
+        {
+            return System.IO.Directory.Exists(folder) && IsConnected;
+        }
+        public void Capture()
+        {
+            Camera.SetSetting(EOSDigital.SDK.PropertyID.SaveTo, (int)EOSDigital.SDK.SaveTo.Host);
+            Camera.SetCapacity(Int32.MaxValue, Int32.MaxValue);
+            Camera.TakePhoto();
         }
 
 

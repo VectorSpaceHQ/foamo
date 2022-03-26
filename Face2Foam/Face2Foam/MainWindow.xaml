@@ -57,6 +57,10 @@
                                 <TextBlock Text="Disconnect" Margin="5"/>
                             </Button>
                         </Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox Margin="5" IsChecked="{Binding AutomaticallyRecalculate}"/>
+                            <TextBlock Margin="5" Text="Automatically Recalculate"/>
+                        </StackPanel>
                     </StackPanel>
                 </GroupBox>
                 
@@ -223,31 +227,33 @@
         </ScrollViewer>
         <TabControl Grid.Column="1" Margin="10,10,10,0">
             <TabItem Header="Original">
-                <Image Grid.Column="1" HorizontalAlignment="Left" Height="800" Margin="0" VerticalAlignment="Top" Width="800" Source="{Binding OriginalImage}"/>
+                <Image Grid.Column="1" HorizontalAlignment="Left" Height="600" Margin="0" VerticalAlignment="Top" Width="600" Source="{Binding OriginalImage}"/>
             </TabItem>
             <TabItem Header="Foreground Filtered">
-                <Image Grid.Column="1" HorizontalAlignment="Left" Height="800" Margin="0" VerticalAlignment="Top" Width="800" Source="{Binding ForegroundRemovedImage}" MouseDown="ForegroundImage_MouseDown"/>
+                <Image Grid.Column="1" HorizontalAlignment="Left" Height="600" Margin="0" VerticalAlignment="Top" Width="600" Source="{Binding ForegroundRemovedImage}" MouseDown="ForegroundImage_MouseDown"/>
             </TabItem>
             <TabItem Header="Background Filtered">
-                <Image Grid.Column="1" HorizontalAlignment="Left" Height="800" Margin="0" VerticalAlignment="Top" Width="800" Source="{Binding BackgroundRemovedImage}" MouseDown="BackgroundImage_MouseDown"/>
+                <Image Grid.Column="1" HorizontalAlignment="Left" Height="600" Margin="0" VerticalAlignment="Top" Width="600" Source="{Binding BackgroundRemovedImage}" MouseDown="BackgroundImage_MouseDown"/>
             </TabItem>
             <TabItem Header="Discrete Filter">
-                <Image Grid.Column="1" HorizontalAlignment="Left" Height="800" Margin="0" VerticalAlignment="Top" Width="800" Source="{Binding DiscreteImage}"/>
+                <Image Grid.Column="1" HorizontalAlignment="Left" Height="600" Margin="0" VerticalAlignment="Top" Width="600" Source="{Binding DiscreteImage}"/>
             </TabItem>
             <TabItem Header="Smoothing">
-                <Image Grid.Column="1" HorizontalAlignment="Left" Height="800" Margin="0" VerticalAlignment="Top" Width="800" Source="{Binding SmoothedImage}" MouseLeftButtonDown="Smoothing_LeftMouseDown" MouseRightButtonDown="Smoothing_RightMouseDown"/>
+                <Image Grid.Column="1" HorizontalAlignment="Left" Height="600" Margin="0" VerticalAlignment="Top" Width="600" Source="{Binding SmoothedImage}" MouseLeftButtonDown="Smoothing_LeftMouseDown" MouseRightButtonDown="Smoothing_RightMouseDown"/>
             </TabItem>
             <TabItem Header="Head">
-                <Image Grid.Column="1" HorizontalAlignment="Left" Height="800" Margin="0" VerticalAlignment="Top" Width="800" Source="{Binding HeadImage}"/>
+                <Image Grid.Column="1" HorizontalAlignment="Left" Height="600" Margin="0" VerticalAlignment="Top" Width="600" Source="{Binding HeadImage}"/>
             </TabItem>
             <TabItem Header="Profile">
-                <Image Grid.Column="1" HorizontalAlignment="Left" Height="800" Margin="0" VerticalAlignment="Top" Width="800" Source="{Binding ProfileImage}"/>
+                <Image Grid.Column="1" HorizontalAlignment="Left" Height="600" Margin="0" VerticalAlignment="Top" Width="600" Source="{Binding ProfileImage}"/>
             </TabItem>
         </TabControl>
 
         <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="10">
 
-
+            <Button Width="auto" MinWidth="100"  HorizontalAlignment="Left" Command="{Binding RefreshImagesCommand}">
+                <TextBlock Text="Recalculate" Margin="5"/>
+            </Button>
             <Button Width="auto" MinWidth="100"  HorizontalAlignment="Right">
                 <TextBlock Text="Close" Margin="5"/>
             </Button>

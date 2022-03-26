@@ -27,12 +27,13 @@ namespace Face2Foam
 
         protected Face2FoamLib.ImageProcessor.ImageProcessorSettings Settings;
         public ImageProcessorSettingsView SettingsView { get; protected set; }
-        string imageSourceFolder;
+        string imageSourceFolder = "";
         public string ImageSourceFolder { get { return imageSourceFolder; } set { SetProperty(ref imageSourceFolder, value); RecalculateButtonPermissives(); SetToNextImage(); } }
-        string imageSourceFile;
-        public string ImageSourceFile { get { return imageSourceFile; } set { SetProperty(ref imageSourceFile, value); UpdateImagesFromFile(); } }
+        string imageSourceFile = "";
+        public string ImageSourceFile { get { return imageSourceFile; } set { SetProperty(ref imageSourceFile, value); RecalculateButtonPermissives(); UpdateImagesFromFile(); } }
         public string ImageSourceFilePath { get { return System.IO.Path.Combine(imageSourceFolder, imageSourceFile); } }
-
+        bool automaticallyRecalculate;
+        public bool AutomaticallyRecalculate { get { return automaticallyRecalculate; } set { SetProperty(ref automaticallyRecalculate, value); } }
 
         string gcodeFolder;
         int imageSize;//millimeters of each edge of the square
@@ -51,10 +52,10 @@ namespace Face2Foam
         public RelayCommand PreviousImageCommand { get; protected set; }
         public RelayCommand NextImageCommand { get; protected set; }
         public RelayCommand GCodeExportCommand { get; protected set; }
+        public RelayCommand RefreshImagesCommand { get; protected set; }
 
         public ImageProcessorView(Face2FoamLib.ImageProcessor imageProcessor, Face2FoamLib.CameraConnector cameraConnector, Face2FoamLib.ImageProcessor.ImageProcessorSettings settings)
         {
-            
 
             ImageProcessor = imageProcessor;
             Camera = cameraConnector;
@@ -69,10 +70,11 @@ namespace Face2Foam
 
             ProcessImageAction = (System.Drawing.Bitmap b) => { ImageProcessor.ProcessImage(b, Settings); UpdateDisplayedImages(); };
             Camera.SomethingChanged += (o, e) => { System.Windows.Application.Current.Dispatcher.Invoke(RecalculateButtonPermissives); };
+            Camera.PictureTaken += HandlePictureTaken;
             Settings = settings;
             SettingsView = new ImageProcessorSettingsView(Settings);
-            SettingsView.PropertyChanged += (o, e) => { if(!cameraConnector.IsStreaming) System.Windows.Application.Current.Dispatcher.Invoke(UpdateImagesFromFile); };
-            SettingsView.ChildPropertyChanged += (o, e) => { if (!cameraConnector.IsStreaming) System.Windows.Application.Current.Dispatcher.Invoke(UpdateImagesFromFile); };
+            SettingsView.PropertyChanged += (o, e) => { if(!cameraConnector.IsStreaming) System.Windows.Application.Current.Dispatcher.Invoke(AutomaticallyUpdateImagesFromFile); };
+            SettingsView.ChildPropertyChanged += (o, e) => { if (!cameraConnector.IsStreaming) System.Windows.Application.Current.Dispatcher.Invoke(AutomaticallyUpdateImagesFromFile); };
 
 
             GCodeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -80,19 +82,23 @@ namespace Face2Foam
             imageSize = 600;
 
             ConnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Connect, () =>!Camera.IsConnected);
-            CaptureCameraCommand = new RelayCommand(() => {; }, () => false);
+            CaptureCameraCommand = new RelayCommand(() => { cameraConnector.Capture(); }, () => cameraConnector.CanCapture(imageSourceFolder)) ;
             DisconnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Dispose, () => Camera.IsConnected);
             GCodeExportCommand = new RelayCommand(ExportGCode, () => System.IO.Directory.Exists(GCodeFolder));
             NextImageCommand = new RelayCommand(SetToNextImage, () => System.IO.Directory.Exists(ImageSourceFolder));
             PreviousImageCommand = new RelayCommand(SetToPreviousImage, () => System.IO.Directory.Exists(ImageSourceFolder));
+            RefreshImagesCommand = new RelayCommand(UpdateImagesFromFile, () => System.IO.File.Exists(ImageSourceFilePath));
         }
 
-        
+        public void AutomaticallyUpdateImagesFromFile()
+        {
+            if (AutomaticallyRecalculate) UpdateImagesFromFile();
+        }
         public void UpdateImagesFromFile()
         {
             if (!System.IO.File.Exists(ImageSourceFilePath)) return;
             ImageProcessor.ProcessImage(ImageSourceFilePath, Settings);
-            UpdateDisplayedImages();
+            System.Windows.Application.Current.Dispatcher.Invoke(UpdateDisplayedImages);
         }
 
         protected void SetToNextImage()
@@ -127,6 +133,16 @@ namespace Face2Foam
             }
         }
 
+        public void HandlePictureTaken(EOSDigital.API.Camera sender, EOSDigital.API.DownloadInfo info)
+        {
+            if(System.IO.Directory.Exists(ImageSourceFolder))
+            {
+                sender.DownloadFile(info, imageSourceFolder);
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                ImageSourceFile = System.IO.Path.GetFileName(info.FileName));
+            }
+        }
+
 
         public void UpdateDisplayedImages()
         {
@@ -146,11 +162,6 @@ namespace Face2Foam
             OnPropertyChanged(nameof(this.ProfileImage));
         }
 
-        public static void UpdateDisplayedImage(WriteableBitmap displayedImage, AForge.Imaging.UnmanagedImage processedImage)
-        {
-            System.Drawing.Bitmap bitmap = processedImage.ToManagedImage();
-
-        }
 
         public void RecalculateButtonPermissives()
         {
@@ -160,6 +171,7 @@ namespace Face2Foam
             PreviousImageCommand?.NotifyCanExecuteChanged();
             NextImageCommand?.NotifyCanExecuteChanged();
             GCodeExportCommand?.NotifyCanExecuteChanged();
+            RefreshImagesCommand?.NotifyCanExecuteChanged();
         }
 
         public void ExportGCode()
