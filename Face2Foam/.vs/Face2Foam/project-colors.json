@@ -15,7 +15,12 @@
       "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
       "DisplayName": "Miscellaneous Files",
       "ColorIndex": -1
+    },
+    "15e99248-6161-46a4-9183-609ca62406a6": {
+      "ProjectGuid": "15e99248-6161-46a4-9183-609ca62406a6",
+      "DisplayName": "EDSDKLib",
+      "ColorIndex": 2
     }
   },
-  "NextColorIndex": 2
+  "NextColorIndex": 3
 }

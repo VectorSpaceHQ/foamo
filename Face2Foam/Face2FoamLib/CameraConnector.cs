@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using EOSDigital.API;
 
 namespace Face2FoamLib
@@ -17,6 +18,8 @@ namespace Face2FoamLib
         public bool IsStreaming { get { return IsConnected && Camera.IsLiveViewOn; } }
 
         public event LiveViewUpdate NewLiveViewImageAvailable;
+        public event EventHandler SomethingChanged;
+        public event DownloadHandler PictureTaken;
         public CameraConnector()
         {
             CanonAPI = new CanonAPI(false);
@@ -27,10 +30,22 @@ namespace Face2FoamLib
         {
             Camera?.Dispose();
             Camera = CanonAPI.GetCameraList().SingleOrDefault();
+            if (Camera == null) return;
             Camera.LiveViewUpdated += HandleLiveViewUpdated;
-            Camera.PropertyChanged += HandlePropertyChanged;
-            Camera.StateChanged += HandleStateChanged;
+            Camera.CameraHasShutdown += delegate { HandleSomethingChanged(); };
+            Camera.DownloadReady += delegate { HandleSomethingChanged(); };
+            Camera.DownloadReady += HandlePictureTaken;
+            Camera.LiveViewStopped += delegate { HandleSomethingChanged(); };
+            Camera.ObjectChanged += delegate { HandleSomethingChanged(); };
+            Camera.ProgressChanged += delegate { HandleSomethingChanged(); };
+            Camera.PropertyChanged += delegate { HandleSomethingChanged(); };
+            Camera.StateChanged += delegate { HandleSomethingChanged(); };
             Camera?.OpenSession();
+        }
+
+        public void Disconnect()
+        {
+            Camera?.CloseSession();
         }
 
         public void StartLiveCapture()
@@ -44,18 +59,30 @@ namespace Face2FoamLib
             Camera?.StopLiveView();
         }
 
-        public void HandlePropertyChanged(Camera source, EOSDigital.SDK.PropertyEventID eventID, EOSDigital.SDK.PropertyID propertyID ,int parameter)
+        public void HandleSomethingChanged()
         {
-            
-        }
-        public void HandleStateChanged(Camera source, EOSDigital.SDK.StateEventID eventID, int parameter)
-        {
-            
+            SomethingChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void HandleLiveViewUpdated(Camera source, System.IO.Stream stream)
         {
             NewLiveViewImageAvailable?.Invoke(source, stream);
+        }
+
+        public void HandlePictureTaken(Camera sender, DownloadInfo info)
+        {
+            PictureTaken?.Invoke(sender,info);
+        }
+
+        public bool CanCapture(string folder)
+        {
+            return System.IO.Directory.Exists(folder) && IsConnected;
+        }
+        public void Capture()
+        {
+            Camera.SetSetting(EOSDigital.SDK.PropertyID.SaveTo, (int)EOSDigital.SDK.SaveTo.Host);
+            Camera.SetCapacity(Int32.MaxValue, Int32.MaxValue);
+            Camera.TakePhoto();
         }
 
 
