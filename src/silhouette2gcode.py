@@ -13,7 +13,7 @@ def calc_dist(p1, p2):
     return dist
 
 def nearest_neighbor(points):
-    sorted_points = [[0,0]]
+    sorted_points = [[100,5]]
 
     target_len = len(points)
     while len(sorted_points) < target_len:
@@ -39,10 +39,11 @@ def points_to_gcode(points, filename):
     outname = os.path.splitext(basefile)[0]
     with open(outname + '.nc', "w+") as f:
         f.write('(new profile)\n')
-        f.write('G20\n') # inches
+        f.write('G21\n') # mm
+        f.write('G28XY\n') # mm
         for point in points:
             x, y = point
-            speed = 2400 # feedrate (mm/min)
+            speed = 800 # feedrate (mm/min)
             f.write("G1 X{} Y{} F{}\n".format(x,y, speed))
 
 
@@ -55,10 +56,14 @@ if __name__ == "__main__":
         sys.exit()
 
     im = cv2.imread(infile)
+    im_flipped = cv2.flip(im, 0)
     imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(imgray, 127, 255, 0)
+    # ret, thresh = cv2.threshold(imgray, 127, 255, 0)
+    ret, thresh = cv2.threshold(imgray, 0, 255, 0, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        # ret3, thresh = cv.threshold(blur, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     # contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
     cont = cv2.drawContours(im, contours, -1, (0,255,0), 3)
     points = []
     for c in contours:
