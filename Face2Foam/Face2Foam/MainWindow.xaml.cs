@@ -36,6 +36,9 @@ namespace Face2Foam
 #if DEBUG
             imageProcessorSettings.BackgroundFilters.Add(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings() { Color = new AForge.Imaging.RGB(160, 170, 180), Radius = 255 });
 #endif
+#if !DEBUG
+            imageProcessorSettings.BackgroundFilters.Add(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings() { Color = new AForge.Imaging.RGB(200, 200, 200), Radius = 255 });
+#endif
             ImageView = new ImageProcessorView(imageProcessor, cameraConnector, imageProcessorSettings);
             DataContext = this;
             InitializeComponent();
@@ -43,6 +46,11 @@ namespace Face2Foam
 #if DEBUG
             ImageView.ImageSourceFolder = @"C:\Users\andre\OneDrive\Documents\Projects\Foam Cutter\Face Profiler\Sample Images 2022-02-06";
             ImageView.GCodePreamble = "G21\r\nG90\r\nG28 X Y\r\nG0 X0 Y0\r\nG1 F600";
+#endif
+#if !DEBUG
+            ImageView.ImageSourceFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            ImageView.GCodeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            ImageView.GCodePreamble = (new System.Net.WebClient()).DownloadString(@"https://raw.githubusercontent.com/VectorSpaceHQ/foamo/main/Face2Foam/GCode%20Preamble.txt");
 #endif
 
         }

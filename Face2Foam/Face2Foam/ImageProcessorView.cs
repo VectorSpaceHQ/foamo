@@ -40,7 +40,7 @@ namespace Face2Foam
         public string ImageSize { get { return imageSize.ToString(); } set { try { SetProperty(ref imageSize, Convert.ToInt32(value)); } catch(Exception ex) { SetProperty(ref imageSize, Convert.ToInt32(0)); } } }
         public string GCodeFolder { get { return gcodeFolder; } set { SetProperty(ref gcodeFolder, value); RecalculateButtonPermissives(); } }
         string gcodeFile;
-        public string GCodeFile { get { return gcodeFile; } set { SetProperty(ref gcodeFile, value); } }
+        public string GCodeFile { get { return gcodeFile; } set { SetProperty(ref gcodeFile, value);  } }
         string gcodePreamble;
         public string GCodePreamble { get { return gcodePreamble; } set { SetProperty(ref gcodePreamble, value); } }
 
@@ -76,8 +76,7 @@ namespace Face2Foam
             SettingsView.PropertyChanged += (o, e) => { if(!cameraConnector.IsStreaming) System.Windows.Application.Current.Dispatcher.Invoke(AutomaticallyUpdateImagesFromFile); };
             SettingsView.ChildPropertyChanged += (o, e) => { if (!cameraConnector.IsStreaming) System.Windows.Application.Current.Dispatcher.Invoke(AutomaticallyUpdateImagesFromFile); };
 
-
-            GCodeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            AutomaticallyRecalculate = true;
             GCodeFile = "Profile";
             imageSize = 600;
 
@@ -90,6 +89,7 @@ namespace Face2Foam
             RefreshImagesCommand = new RelayCommand(UpdateImagesFromFile, () => System.IO.File.Exists(ImageSourceFilePath));
         }
 
+
         public void AutomaticallyUpdateImagesFromFile()
         {
             if (AutomaticallyRecalculate) UpdateImagesFromFile();
@@ -97,7 +97,11 @@ namespace Face2Foam
         public void UpdateImagesFromFile()
         {
             if (!System.IO.File.Exists(ImageSourceFilePath)) return;
-            ImageProcessor.ProcessImage(ImageSourceFilePath, Settings);
+            try
+            {
+                ImageProcessor.ProcessImage(ImageSourceFilePath, Settings);
+            }
+            catch (Exception ex) { }
             System.Windows.Application.Current.Dispatcher.Invoke(UpdateDisplayedImages);
         }
 
@@ -179,8 +183,13 @@ namespace Face2Foam
             double scale = Convert.ToDouble(imageSize)/ProfileImage.PixelWidth;
             if (System.IO.Directory.Exists(GCodeFolder))
             {
-
-                ImageProcessor.ExportGCode(System.IO.Path.Combine(GCodeFolder, GCodeFile)+".gcode", GCodePreamble, scale);
+                try
+                {
+                    ImageProcessor.ExportGCode(System.IO.Path.Combine(GCodeFolder, GCodeFile) + ".gcode", GCodePreamble, scale);
+                } catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(ex.Message);
+                }
             }
         }
 
@@ -209,6 +218,7 @@ namespace Face2Foam
             SettingsView.EndPosition = Convert.ToInt32(1000 * x);
         }
 
+        
     }
 
     public class ImageProcessorSettingsView : ObservableObject
