@@ -2,7 +2,8 @@ G21 ; millimeters
 G90 ; absolute
 G53 ; machine coordinates
 G28 X Y ; home X and Y axes
-G0 X100 Y10 ; move to where '0' will be in work coordinates
 G55 ; switch to work coordinates
-G92 X0 Y0 ; set current position to '0' in work coordinates
-G1 F600 ; set default feedrate
+G92 X-75 Y-10 ; set work offset frame for foam clamp
+G0 X-50 Y00 ; move to pre-lead-in position
+G1 F1500 ; set default feedrate for 1" foam
+G1 X0 Y0 ; move to origin
