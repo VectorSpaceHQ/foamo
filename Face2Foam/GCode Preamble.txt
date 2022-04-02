@@ -6,4 +6,3 @@ G55 ; switch to work coordinates
 G92 X-75 Y-10 ; set work offset frame for foam clamp
 G0 X-50 Y00 ; move to pre-lead-in position
 G1 F1500 ; set default feedrate for 1" foam
-G1 X0 Y0 ; move to origin

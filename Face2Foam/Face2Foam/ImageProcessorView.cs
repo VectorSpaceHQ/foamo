@@ -187,7 +187,7 @@ namespace Face2Foam
             {
                 try
                 {
-                    ImageProcessor.ExportGCode(System.IO.Path.Combine(GCodeFolder, GCodeFile) + ".gcode", GCodePreamble, scale);
+                    ImageProcessor.ExportGCode(System.IO.Path.Combine(GCodeFolder, GCodeFile) + ".gcode", GCodePreamble, GCodePostScript, scale);
                 } catch (Exception ex)
                 {
                     System.Windows.MessageBox.Show(ex.Message);

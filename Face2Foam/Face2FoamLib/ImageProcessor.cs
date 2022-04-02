@@ -233,7 +233,9 @@ namespace Face2FoamLib
             return new System.Windows.Media.Imaging.WriteableBitmap(imageWidth, imageHeight, imageDpi, imageDpi, pixelFormat, null);
         }
 
-        public void ExportGCode(string file, string preamble, double scale)
+        
+
+        public void ExportGCode(string file, string preamble, string postscript, double scale)
         {
             int baseY = ProfileImage.Height - 2;//last row is all black, second to last row has start/stop
             int startX = 0;
@@ -268,6 +270,7 @@ namespace Face2FoamLib
                 }
                 sw.WriteLine(PrintPoint(new Point(endX, ProfileImage.Height - 1), scale));
                 sw.WriteLine(PrintPoint(new Point(ProfileImage.Width, ProfileImage.Height - 1), scale));
+                sw.WriteLine(postscript);
             }
         }
 
