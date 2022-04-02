@@ -37,7 +37,7 @@ namespace Face2Foam
             imageProcessorSettings.BackgroundFilters.Add(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings() { Color = new AForge.Imaging.RGB(160, 170, 180), Radius = 255 });
 #endif
 #if !DEBUG
-            imageProcessorSettings.BackgroundFilters.Add(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings() { Color = new AForge.Imaging.RGB(200, 200, 200), Radius = 255 });
+            imageProcessorSettings.BackgroundFilters.Add(new Face2FoamLib.ImageProcessor.ImageProcessorSettings.ColorFilterSettings() { Color = new AForge.Imaging.RGB(170, 170, 170), Radius = 255 });
 #endif
             ImageView = new ImageProcessorView(imageProcessor, cameraConnector, imageProcessorSettings);
             DataContext = this;
@@ -51,6 +51,7 @@ namespace Face2Foam
             ImageView.ImageSourceFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
             ImageView.GCodeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             ImageView.GCodePreamble = (new System.Net.WebClient()).DownloadString(@"https://raw.githubusercontent.com/VectorSpaceHQ/foamo/main/Face2Foam/GCode%20Preamble.txt");
+            ImageView.GCodePostScript = (new System.Net.WebClient()).DownloadString(@"https://raw.githubusercontent.com/VectorSpaceHQ/foamo/main/Face2Foam/GCode%20PostScript.txt");
 #endif
 
         }

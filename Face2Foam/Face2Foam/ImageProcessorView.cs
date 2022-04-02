@@ -43,6 +43,8 @@ namespace Face2Foam
         public string GCodeFile { get { return gcodeFile; } set { SetProperty(ref gcodeFile, value);  } }
         string gcodePreamble;
         public string GCodePreamble { get { return gcodePreamble; } set { SetProperty(ref gcodePreamble, value); } }
+        string gcodePostScript;
+        public string GCodePostScript { get { return gcodePostScript; } set { SetProperty(ref gcodePostScript, value); } }
 
         Action<System.Drawing.Bitmap> ProcessImageAction;
 
@@ -78,7 +80,7 @@ namespace Face2Foam
 
             AutomaticallyRecalculate = true;
             GCodeFile = "Profile";
-            imageSize = 600;
+            imageSize = 475;
 
             ConnectCameraCommand = new Microsoft.Toolkit.Mvvm.Input.RelayCommand(Camera.Connect, () =>!Camera.IsConnected);
             CaptureCameraCommand = new RelayCommand(() => { cameraConnector.Capture(); }, () => cameraConnector.CanCapture(imageSourceFolder)) ;
